@@ -43,10 +43,6 @@ export default function App() {
     setPage(1);
   };
 
-  const handlePageChange = (selectedItem: { selected: number }) => {
-    setPage(selectedItem.selected + 1);
-  };
-
   const handleSelectMovie = (movie: Movie) => {
     setSelectedMovie(movie);
   };
@@ -70,11 +66,13 @@ export default function App() {
           <ReactPaginate
             pageCount={totalPages}
             pageRangeDisplayed={5}
-            marginPagesDisplayed={2}
-            onPageChange={handlePageChange}
+            marginPagesDisplayed={1}
+            onPageChange={({ selected }) => setPage(selected + 1)}
+            forcePage={page - 1}
             containerClassName={styles.pagination}
             activeClassName={styles.active}
-            forcePage={page - 1}
+            nextLabel="→"
+            previousLabel="←"
           />
         )}
 
