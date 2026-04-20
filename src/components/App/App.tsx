@@ -26,11 +26,12 @@ export default function App() {
   const [query, setQuery] = useState<string>("");
   const [page, setPage] = useState<number>(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const hasSearchQuery = query.trim() !== "";
 
   const { data, isPending, isError } = useQuery({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
-    enabled: !!query,
+    enabled: hasSearchQuery,
     placeholderData: keepPreviousData,
   });
 
@@ -39,10 +40,10 @@ export default function App() {
   const visiblePages = getVisiblePages(page, totalPages);
 
   useEffect(() => {
-    if (query && !isPending && !isError && movies.length === 0) {
+    if (hasSearchQuery && !isPending && !isError && movies.length === 0) {
       toast.error("No movies found for your request.");
     }
-  }, [query, isPending, isError, movies.length]);
+  }, [hasSearchQuery, isPending, isError, movies.length]);
 
   useEffect(() => {
     if (isError) {
@@ -68,10 +69,10 @@ export default function App() {
       <div className={styles.app}>
         <SearchBar onSubmit={handleSearch} />
 
-        {isPending && <Loader />}
+        {hasSearchQuery && isPending && <Loader />}
         {isError && <ErrorMessage />}
 
-        {!isPending && !isError && totalPages > 1 && (
+        {hasSearchQuery && !isPending && !isError && totalPages > 1 && (
           <nav aria-label="Pagination">
             <ul className={styles.pagination}>
               <li>
@@ -115,7 +116,7 @@ export default function App() {
           </nav>
         )}
 
-        {!isPending && !isError && movies.length > 0 && (
+        {hasSearchQuery && !isPending && !isError && movies.length > 0 && (
           <MovieGrid movies={movies} onSelect={handleSelectMovie} />
         )}
 
