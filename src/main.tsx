@@ -1,4 +1,6 @@
+// @ts-ignore
 import "modern-normalize";
+// @ts-ignore
 import "./style.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
