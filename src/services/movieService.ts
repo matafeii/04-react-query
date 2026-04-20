@@ -18,9 +18,6 @@ export const fetchMovies = async (query: string, page: number = 1): Promise<Movi
     throw new Error("VITE_TMDB_TOKEN is not defined. Please check your .env.local file.");
   }
 
-  console.log("Token loaded:", token ? "Yes" : "No");
-  console.log("Token length:", token?.length);
-
   const config = {
     params: {
       query,
@@ -33,8 +30,6 @@ export const fetchMovies = async (query: string, page: number = 1): Promise<Movi
       "Accept": "application/json",
     },
   };
-
-  console.log("Making request to TMDB API with headers:", config.headers);
 
   const response = await axios.get<FetchMoviesResponse>(
     "https://api.themoviedb.org/3/search/movie",
