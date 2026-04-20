@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 import type { Movie } from "../../types/movie";
@@ -27,10 +27,11 @@ export default function App() {
   const [page, setPage] = useState<number>(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isPending, isError } = useQuery({
     queryKey: ["movies", query, page],
     queryFn: () => fetchMovies(query, page),
     enabled: !!query,
+    placeholderData: keepPreviousData,
   });
 
   const movies = data?.results || [];
@@ -38,10 +39,10 @@ export default function App() {
   const visiblePages = getVisiblePages(page, totalPages);
 
   useEffect(() => {
-    if (query && !isLoading && !isError && movies.length === 0) {
+    if (query && !isPending && !isError && movies.length === 0) {
       toast.error("No movies found for your request.");
     }
-  }, [query, isLoading, isError, movies.length]);
+  }, [query, isPending, isError, movies.length]);
 
   useEffect(() => {
     if (isError) {
@@ -67,10 +68,10 @@ export default function App() {
       <div className={styles.app}>
         <SearchBar onSubmit={handleSearch} />
 
-        {isLoading && <Loader />}
+        {isPending && <Loader />}
         {isError && <ErrorMessage />}
 
-        {!isLoading && !isError && totalPages > 1 && (
+        {!isPending && !isError && totalPages > 1 && (
           <nav aria-label="Pagination">
             <ul className={styles.pagination}>
               <li>
@@ -114,7 +115,7 @@ export default function App() {
           </nav>
         )}
 
-        {!isLoading && !isError && movies.length > 0 && (
+        {!isPending && !isError && movies.length > 0 && (
           <MovieGrid movies={movies} onSelect={handleSelectMovie} />
         )}
 
