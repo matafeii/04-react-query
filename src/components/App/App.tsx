@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import ReactPaginate from "react-paginate";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 import type { Movie } from "../../types/movie";
@@ -11,6 +10,17 @@ import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import MovieModal from "../MovieModal/MovieModal";
 import styles from "./App.module.css";
+
+function getVisiblePages(currentPage: number, totalPages: number) {
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, startPage + 4);
+  const adjustedStartPage = Math.max(1, endPage - 4);
+
+  return Array.from(
+    { length: endPage - adjustedStartPage + 1 },
+    (_, index) => adjustedStartPage + index,
+  );
+}
 
 export default function App() {
   const [query, setQuery] = useState<string>("");
@@ -25,6 +35,7 @@ export default function App() {
 
   const movies = data?.results || [];
   const totalPages = data?.totalPages || 0;
+  const visiblePages = getVisiblePages(page, totalPages);
 
   useEffect(() => {
     if (query && !isLoading && !isError && movies.length === 0) {
@@ -53,7 +64,7 @@ export default function App() {
 
   return (
     <>
-      <div className={styles.container}>
+      <div className={styles.app}>
         <SearchBar onSubmit={handleSearch} />
 
         {isLoading && <Loader />}
@@ -63,17 +74,47 @@ export default function App() {
         )}
 
         {!isLoading && !isError && totalPages > 1 && (
-          <ReactPaginate
-            pageCount={totalPages}
-            pageRangeDisplayed={5}
-            marginPagesDisplayed={1}
-            onPageChange={({ selected }) => setPage(selected + 1)}
-            forcePage={page - 1}
-            containerClassName={styles.pagination}
-            activeClassName={styles.active}
-            nextLabel="→"
-            previousLabel="←"
-          />
+          <nav aria-label="Pagination">
+            <ul className={styles.pagination}>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setPage((currentPage) => currentPage - 1)}
+                  disabled={page === 1}
+                  aria-label="Previous page"
+                >
+                  &larr;
+                </button>
+              </li>
+
+              {visiblePages.map((pageNumber) => (
+                <li
+                  key={pageNumber}
+                  className={pageNumber === page ? styles.active : undefined}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setPage(pageNumber)}
+                    aria-current={pageNumber === page ? "page" : undefined}
+                    aria-label={`Page ${pageNumber}`}
+                  >
+                    {pageNumber}
+                  </button>
+                </li>
+              ))}
+
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setPage((currentPage) => currentPage + 1)}
+                  disabled={page === totalPages}
+                  aria-label="Next page"
+                >
+                  &rarr;
+                </button>
+              </li>
+            </ul>
+          </nav>
         )}
 
         {selectedMovie && (
