@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 import type { Movie } from "../../types/movie";
@@ -11,31 +12,29 @@ import MovieModal from "../MovieModal/MovieModal";
 import styles from "./App.module.css";
 
 export default function App() {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isError, setIsError] = useState(false);
+  const [query, setQuery] = useState<string>("");
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const handleSearch = async (query: string) => {
-    setMovies([]);
-    setIsLoading(true);
-    setIsError(false);
+  const { data: movies = [], isLoading, isError } = useQuery({
+    queryKey: ["movies", query],
+    queryFn: () => fetchMovies(query),
+    enabled: !!query,
+  });
 
-    try {
-      const result = await fetchMovies(query);
-
-      if (result.length === 0) {
-        toast.error("No movies found for your request.");
-        setMovies([]);
-      } else {
-        setMovies(result);
-      }
-    } catch {
-      setIsError(true);
-      toast.error("There was an error, please try again...");
-    } finally {
-      setIsLoading(false);
+  useEffect(() => {
+    if (query && !isLoading && !isError && movies.length === 0) {
+      toast.error("No movies found for your request.");
     }
+  }, [query, isLoading, isError, movies.length]);
+
+  useEffect(() => {
+    if (isError) {
+      toast.error("There was an error, please try again...");
+    }
+  }, [isError]);
+
+  const handleSearch = (searchQuery: string) => {
+    setQuery(searchQuery);
   };
 
   const handleSelectMovie = (movie: Movie) => {
