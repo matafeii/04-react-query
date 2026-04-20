@@ -69,9 +69,6 @@ export default function App() {
 
         {isLoading && <Loader />}
         {isError && <ErrorMessage />}
-        {!isLoading && !isError && movies.length > 0 && (
-          <MovieGrid movies={movies} onSelect={handleSelectMovie} />
-        )}
 
         {!isLoading && !isError && totalPages > 1 && (
           <nav aria-label="Pagination">
@@ -115,6 +112,10 @@ export default function App() {
               </li>
             </ul>
           </nav>
+        )}
+
+        {!isLoading && !isError && movies.length > 0 && (
+          <MovieGrid movies={movies} onSelect={handleSelectMovie} />
         )}
 
         {selectedMovie && (
