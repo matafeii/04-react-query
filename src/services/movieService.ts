@@ -3,9 +3,15 @@ import type { Movie } from "../types/movie";
 
 interface FetchMoviesResponse {
   results: Movie[];
+  total_pages: number;
 }
 
-export const fetchMovies = async (query: string): Promise<Movie[]> => {
+export interface MoviesData {
+  results: Movie[];
+  totalPages: number;
+}
+
+export const fetchMovies = async (query: string, page: number = 1): Promise<MoviesData> => {
   const token = import.meta.env.VITE_TMDB_TOKEN;
 
   const config = {
@@ -13,7 +19,7 @@ export const fetchMovies = async (query: string): Promise<Movie[]> => {
       query,
       include_adult: false,
       language: "en-US",
-      page: 1,
+      page,
     },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -25,5 +31,8 @@ export const fetchMovies = async (query: string): Promise<Movie[]> => {
     config,
   );
 
-  return response.data.results;
+  return {
+    results: response.data.results,
+    totalPages: response.data.total_pages,
+  };
 };

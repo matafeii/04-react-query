@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import ReactPaginate from "react-paginate";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 import type { Movie } from "../../types/movie";
@@ -13,13 +14,17 @@ import styles from "./App.module.css";
 
 export default function App() {
   const [query, setQuery] = useState<string>("");
+  const [page, setPage] = useState<number>(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const { data: movies = [], isLoading, isError } = useQuery({
-    queryKey: ["movies", query],
-    queryFn: () => fetchMovies(query),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["movies", query, page],
+    queryFn: () => fetchMovies(query, page),
     enabled: !!query,
   });
+
+  const movies = data?.results || [];
+  const totalPages = data?.totalPages || 0;
 
   useEffect(() => {
     if (query && !isLoading && !isError && movies.length === 0) {
@@ -35,6 +40,11 @@ export default function App() {
 
   const handleSearch = (searchQuery: string) => {
     setQuery(searchQuery);
+    setPage(1);
+  };
+
+  const handlePageChange = (selectedItem: { selected: number }) => {
+    setPage(selectedItem.selected + 1);
   };
 
   const handleSelectMovie = (movie: Movie) => {
@@ -52,8 +62,20 @@ export default function App() {
 
         {isLoading && <Loader />}
         {isError && <ErrorMessage />}
-        {!isLoading && !isError && (
+        {!isLoading && !isError && movies.length > 0 && (
           <MovieGrid movies={movies} onSelect={handleSelectMovie} />
+        )}
+
+        {!isLoading && !isError && totalPages > 1 && (
+          <ReactPaginate
+            pageCount={totalPages}
+            pageRangeDisplayed={5}
+            marginPagesDisplayed={2}
+            onPageChange={handlePageChange}
+            containerClassName={styles.pagination}
+            activeClassName={styles.active}
+            forcePage={page - 1}
+          />
         )}
 
         {selectedMovie && (
